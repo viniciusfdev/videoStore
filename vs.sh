@@ -1,36 +1,23 @@
 #!/bin/bash
 
-# primeiro parametro é função q o programa irá exercer
-# as funções sao: 
-# - alugar, entregar, cadastrar, deletar e listar (CRUD)
+# 1! atribuicao de valores default a variaveis
+logFile="${2:-file.log}" 
 
-# cadastrar: inserir o nome do filme (ela checa se já existe um filme para nao remover os dados dele e nem duplicá-lo)
-# alugar: Exibi a lista de filmes disponíveis e aluga com base na entrada do teclado, ao alugar seta o filme como alugado na lista
-# deletar: Remove da lista de filmes
-# entregar: Atualiza o filme, o colocando como disponivel
-# lista - Exibi uma análise dos dados, quais os mais alugados
-
-# ! uso de funcoes
-# ! redirecionamento
-# ! Parametros e variaveis (variaveis de ambiente)
-
-
-# ! atribuicao de valores default a variaveis
-logFile="${2:-'log.file'}" 
-
+# 2! uso de funcoes
+# 3! redirecionamento da saida padrão do echo
+# 4! Parametros e variaveis (variaveis de ambiente)
 log()
 {
   echo "$USER $1" >> "${logFile}"
 }
 
-# ! estrutura condicional
+# 5! estrutura condicional
 if [ ! -f "data" ]; then
   touch data
   log "create films database"
 fi
 
-# ! processamento de texto
-# ! busca com awk
+# 6! processamento de texto com awk
 search()
 {
   FILM=$( awk "/^$1/ { print; exit; }" data )
@@ -40,12 +27,13 @@ search()
 list()
 {
   sort -r -t ":" -n -k 3 data | \
-  sed -e '1 i\nome:alugado:popularidade' | \
+  sed -e '1 i\NOME:ALUGADO:POPULARIDADE' | \
   awk -F ":" '{ printf "\n %-20s %8s %12s" , $1, $2, $3 }' | \
   sed -e '1 i\Lista de filmes' | \
   less
 }
 
+# 7! processamento de texto com sed
 delete()
 {
   read -p "Qual filme deseja deletar? " FILM
@@ -54,7 +42,6 @@ delete()
   log "${FILM} deletado"
 }
 
-# ! uso de regex
 showNotRentedFilms()
 {
   header="----------- Lista de filmes disponíveis ------------"
@@ -71,7 +58,6 @@ showNotRentedFilms()
   fi
 }
 
-# ! uso de regex
 showRentedFilms()
 {
   header="----------- Lista de filmes alugados ------------"
@@ -88,9 +74,7 @@ showRentedFilms()
   fi
 }
 
-# ! redirecionamento
-# ! regex
-# ! uso de pipes
+# 8! uso de regex
 rent()
 {
   showNotRentedFilms
@@ -114,8 +98,8 @@ rent()
   done
 }
 
-# ! leitura da entrada padrão
-# ! estruturas de repetição
+# 9! leitura da entrada padrão
+# 10! estruturas de repetição
 create()
 {
   while :; do
@@ -133,7 +117,7 @@ create()
   done
 }
 
-# ! expansao de comandos via $()
+# 11! expansao de comandos via $()
 checkin()
 {
   showRentedFilms
@@ -153,8 +137,24 @@ checkin()
   done
 }
 
-# ! estrutura condicional
-# ! leitura dos parametros posicionais
+showHelp()
+{
+  echo  "
+  
+  Primeiro parametro é a função que o programa irá exercer, o segundo parametro opcional é o caminho do arquivo de log.
+
+  ./vs.sh action [log_file_path]
+
+   - cadastrar: Inserir um filme na base (nomes são únicos)
+   - alugar: Aluga um filme disponível
+   - deletar: Remove da lista de filmes
+   - entregar: Atualiza o filme, o colocando como disponivel (checkin)
+   - listar - Exibi a lista de filme ordenaos pela popularidade
+  "
+
+}
+
+# 12! leitura dos parametros posicionais
 case $1 in
   alugar)
     rent
@@ -170,10 +170,6 @@ case $1 in
 
   deletar)
     delete
-  ;;
-
-  random)
-    random
   ;;
 
   listar)
